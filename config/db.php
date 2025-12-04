@@ -1,30 +1,44 @@
 <?php
-// db.php
-// Koneksi Khusus PostgreSQL untuk Railway
+// db.php - Koneksi Database Khusus Railway
+// Script ini otomatis mendeteksi konfigurasi environment variable
 
-// Ambil variabel environment dari Railway (atau default ke localhost jika testing lokal)
-// Railway menyediakan variabel khusus untuk Postgres: PGHOST, PGUSER, PGDATABASE, PGPASSWORD, PGPORT
-$host = getenv('PGHOST') ? getenv('PGHOST') : 'localhost';
-$port = getenv('PGPORT') ? getenv('PGPORT') : '5432';
-$db   = getenv('PGDATABASE') ? getenv('PGDATABASE') : 'nama_db_lokal';
-$user = getenv('PGUSER') ? getenv('PGUSER') : 'postgres';
-$pass = getenv('PGPASSWORD') ? getenv('PGPASSWORD') : 'password_lokal';
+$host = getenv('MYSQLHOST');
+$user = getenv('MYSQLUSER');
+$pass = getenv('MYSQLPASSWORD');
+$db   = getenv('MYSQLDATABASE');
+$port = getenv('MYSQLPORT');
 
-try {
-    // String koneksi (DSN) untuk PostgreSQL
-    $dsn = "pgsql:host=$host;port=$port;dbname=$db";
-    
-    // Membuat koneksi PDO
-    $conn = new PDO($dsn, $user, $pass);
-    
-    // Set mode error agar jika ada masalah, PHP akan memberitahu
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // (Opsional) Set fetch mode default ke Associative Array
-    $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    // Jika koneksi gagal, tampilkan pesan error
-    die("Koneksi Database Gagal: " . $e->getMessage());
+// --- FALLBACK (JAGA-JAGA) ---
+// Jika MYSQLHOST kosong (seperti di screenshot "7 variables" kamu), 
+// kita ambil data dari MYSQL_URL yang pasti ada.
+if (!$host && getenv('MYSQL_URL')) {
+    $url = parse_url(getenv('MYSQL_URL'));
+    $host = $url['host'];
+    $user = $url['user'];
+    $pass = $url['pass'];
+    $db   = ltrim($url['path'], '/'); // Menghapus tanda slash di depan nama db
+    $port = $url['port'];
 }
+
+// Fallback password: Jika MYSQLPASSWORD kosong, coba pakai MYSQL_ROOT_PASSWORD
+if (!$pass) {
+    $pass = getenv('MYSQL_ROOT_PASSWORD');
+}
+
+// Default ke localhost jika dijalankan di laptop (XAMPP) tanpa ENV
+$host = $host ? $host : 'localhost';
+$user = $user ? $user : 'root';
+$pass = $pass ? $pass : '';
+$db   = $db   ? $db   : 'todolist_db'; // Ganti dengan nama DB lokalmu
+$port = $port ? $port : 3307;
+
+// Koneksi ke Database
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
+
+if (!$conn) {
+    die("Koneksi Gagal: " . mysqli_connect_error());
+}
+
+// Opsional: Cek koneksi berhasil (matikan baris ini saat production)
+// echo "Berhasil konek ke host: $host";
 ?>
