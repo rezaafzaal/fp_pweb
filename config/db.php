@@ -1,44 +1,31 @@
 <?php
-// db.php - Koneksi Database Khusus Railway
-// Script ini otomatis mendeteksi konfigurasi environment variable
+// db.php - Versi PDO (Untuk Auth.php yang pakai $pdo)
 
 $host = getenv('MYSQLHOST');
+$port = getenv('MYSQLPORT');
+$db   = getenv('MYSQLDATABASE');
 $user = getenv('MYSQLUSER');
 $pass = getenv('MYSQLPASSWORD');
-$db   = getenv('MYSQLDATABASE');
-$port = getenv('MYSQLPORT');
 
-// --- FALLBACK (JAGA-JAGA) ---
-// Jika MYSQLHOST kosong (seperti di screenshot "7 variables" kamu), 
-// kita ambil data dari MYSQL_URL yang pasti ada.
-if (!$host && getenv('MYSQL_URL')) {
-    $url = parse_url(getenv('MYSQL_URL'));
-    $host = $url['host'];
-    $user = $url['user'];
-    $pass = $url['pass'];
-    $db   = ltrim($url['path'], '/'); // Menghapus tanda slash di depan nama db
-    $port = $url['port'];
-}
-
-// Fallback password: Jika MYSQLPASSWORD kosong, coba pakai MYSQL_ROOT_PASSWORD
-if (!$pass) {
-    $pass = getenv('MYSQL_ROOT_PASSWORD');
-}
-
-// Default ke localhost jika dijalankan di laptop (XAMPP) tanpa ENV
+// Fallback jika variable env belum ke-load (misal di local)
 $host = $host ? $host : 'localhost';
+$port = $port ? $port : '3306';
+$db   = $db   ? $db   : 'railway';
 $user = $user ? $user : 'root';
 $pass = $pass ? $pass : '';
-$db   = $db   ? $db   : 'todolist_db'; // Ganti dengan nama DB lokalmu
-$port = $port ? $port : 3307;
 
-// Koneksi ke Database
-$conn = mysqli_connect($host, $user, $pass, $db, $port);
-
-if (!$conn) {
-    die("Koneksi Gagal: " . mysqli_connect_error());
+try {
+    // String koneksi (DSN)
+    $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
+    
+    // Buat variable $pdo (Sesuai permintaan auth.php)
+    $pdo = new PDO($dsn, $user, $pass);
+    
+    // Setting error mode agar kalau error muncul pesannya
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    
+} catch (PDOException $e) {
+    die("Koneksi Gagal: " . $e->getMessage());
 }
-
-// Opsional: Cek koneksi berhasil (matikan baris ini saat production)
-// echo "Berhasil konek ke host: $host";
 ?>
