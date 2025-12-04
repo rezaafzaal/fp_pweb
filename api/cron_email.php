@@ -1,27 +1,26 @@
 <?php
 // api/cron_email.php
 
-// 1. Load Database & Library
 require_once '../config/db.php'; 
 require '../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP; // Tambah class SMTP buat debug
+use PHPMailer\PHPMailer\SMTP;
 
-// Perpanjang durasi eksekusi jadi 60 detik (default 30s sering timeout)
-set_time_limit(60);
+// Set durasi timeout lebih panjang
+set_time_limit(120); 
 
-// --- SET TIMEZONE ---
 date_default_timezone_set('Asia/Jakarta'); 
 
 $today = date('Y-m-d');
 $h_min_3 = date('Y-m-d', strtotime($today . ' + 3 days'));
 
-echo "<h2>Mode Debugging Email</h2>";
-echo "Tanggal Server Hari Ini: <b>$today</b><br>";
-echo "Mencari tugas deadline: <b>$h_min_3</b> <br><hr>";
+echo "<h2>Debug Mode: Port 587 (TLS)</h2>";
+echo "Server Time: $today<br>";
+echo "Target Deadline: $h_min_3<br><hr>";
 
+// Ambil data
 $sql = "SELECT t.*, u.email, u.name 
         FROM tasks t 
         JOIN users u ON t.user_id = u.id 
@@ -35,9 +34,9 @@ if (count($tasks) > 0) {
     $mail = new PHPMailer(true);
 
     try {
-        // --- KONFIGURASI SMTP GMAIL ---
-        // Aktifkan Debugging agar muncul text detail di browser
-        $mail->SMTPDebug = SMTP::DEBUG_SERVER; 
+        // --- SETTING PENTING AGAR TIDAK STUCK ---
+        $mail->SMTPDebug = SMTP::DEBUG_CONNECTION; // Level 3: Tampilkan detail koneksi
+        $mail->Debugoutput = 'html'; // Format log biar rapi di browser
         
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
@@ -45,9 +44,19 @@ if (count($tasks) > 0) {
         $mail->Username   = getenv('SMTP_EMAIL'); 
         $mail->Password   = getenv('SMTP_PASSWORD'); 
         
-        // KITA COBA GANTI KE PORT 465 (SMTPS) BIAR LEBIH STABIL
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
-        $mail->Port       = 465;
+        // GANTI KE PORT 587 (STARTTLS)
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
+        $mail->Port       = 587;
+
+        // OPSI TAMBAHAN: Matikan IPv6 dan Verifikasi SSL yang ketat
+        // Ini sering menjadi solusi jika koneksi 'hanging' di container docker/railway
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
 
         $mail->setFrom(getenv('SMTP_EMAIL'), 'StudyPlanner Bot');
 
@@ -58,21 +67,23 @@ if (count($tasks) > 0) {
             $mail->isHTML(true);
             $mail->Subject = "Reminder: Tugas H-3 Deadline!";
             
-            $body  = "<h3>Halo " . htmlspecialchars($task['name']) . "!</h3>";
-            $body .= "<p>Tugas <b>'" . htmlspecialchars($task['task_name']) . "'</b> deadline pada <b>" . $task['deadline'] . "</b>.</p>";
+            $body  = "<p>Halo " . htmlspecialchars($task['name']) . ",</p>";
+            $body .= "<p>Tugas <b>" . htmlspecialchars($task['task_name']) . "</b> deadline tanggal <b>" . $task['deadline'] . "</b>.</p>";
             
             $mail->Body = $body;
             $mail->AltBody = strip_tags($body);
 
-            echo "Mencoba mengirim ke: " . $task['email'] . "...<br>";
+            echo "⏳ Sedang menghubungi Gmail untuk: " . $task['email'] . "...<br>";
+            flush(); // Paksa browser menampilkan teks ini segera
+            
             $mail->send();
-            echo "✅ <b>BERHASIL TERKIRIM!</b><br><br>";
+            echo "✅ <b>BERHASIL!</b> Email terkirim.<br><br>";
         }
     } catch (Exception $e) {
-        echo "<br>❌ <b>GAGAL KIRIM EMAIL</b><br>";
-        echo "Pesan Error: " . $mail->ErrorInfo;
+        echo "<br>❌ <b>GAGAL</b><br>";
+        echo "Error: " . $mail->ErrorInfo;
     }
 } else {
-    echo "Tidak ada tugas dengan deadline tanggal $h_min_3.";
+    echo "Tidak ada tugas dengan deadline $h_min_3.";
 }
 ?>
