@@ -1,9 +1,7 @@
 <?php
-// api/auth.php
 session_start();
 require_once '../config/db.php';
 
-// REGISTER
 if (isset($_POST['register'])) {
     $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
     $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
@@ -25,7 +23,6 @@ if (isset($_POST['register'])) {
     }
 }
 
-// LOGIN
 if (isset($_POST['login'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
     $password = $_POST['password'];
@@ -37,9 +34,8 @@ if (isset($_POST['login'])) {
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
-        
-        // TRIGGER CEK RUTINAN SAAT LOGIN
-        include 'check_routine.php'; // File ini akan kita buat di bawah
+
+        include 'check_routine.php'; 
         
         header("Location: ../index.php");
     } else {
@@ -47,7 +43,6 @@ if (isset($_POST['login'])) {
     }
 }
 
-// LOGOUT
 if (isset($_GET['logout'])) {
     session_destroy();
     header("Location: ../login.php");

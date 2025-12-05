@@ -1,5 +1,4 @@
 <?php
-// api/task_action.php
 session_start();
 require_once '../config/db.php';
 
@@ -9,7 +8,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// TAMBAH TUGAS
 if (isset($_POST['add_task'])) {
     $task_name = $_POST['task_name'];
     $urgency = $_POST['urgency'];
@@ -25,10 +23,8 @@ if (isset($_POST['add_task'])) {
     header("Location: ../index.php?success=Tugas ditambahkan");
 }
 
-// UPDATE STATUS (DONE/UNDO)
 if (isset($_GET['toggle_id'])) {
     $id = $_GET['toggle_id'];
-    // Cek status dulu
     $stmt = $pdo->prepare("SELECT status FROM tasks WHERE id = ? AND user_id = ?");
     $stmt->execute([$id, $user_id]);
     $task = $stmt->fetch();
@@ -41,7 +37,6 @@ if (isset($_GET['toggle_id'])) {
     header("Location: ../index.php");
 }
 
-// DELETE TUGAS
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
     $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = ? AND user_id = ?");

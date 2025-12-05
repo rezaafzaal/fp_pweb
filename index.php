@@ -6,17 +6,14 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Trigger cek rutinan setiap buka dashboard agar update
 include 'api/check_routine.php';
 
 $user_id = $_SESSION['user_id'];
 
-// Ambil Data Ongoing
 $stmt = $pdo->prepare("SELECT * FROM tasks WHERE user_id = ? AND status = 'ongoing' ORDER BY deadline ASC, urgency DESC");
 $stmt->execute([$user_id]);
 $ongoing_tasks = $stmt->fetchAll();
 
-// Ambil Data Done
 $stmt = $pdo->prepare("SELECT * FROM tasks WHERE user_id = ? AND status = 'done' ORDER BY deadline DESC");
 $stmt->execute([$user_id]);
 $done_tasks = $stmt->fetchAll();
@@ -115,7 +112,6 @@ $done_tasks = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- Modal Tambah Tugas -->
 <div class="modal fade" id="addTaskModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0">
@@ -163,7 +159,6 @@ $done_tasks = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- Simple Script untuk Modal Rutinan -->
 <script>
     document.getElementById('isRoutineCheck').addEventListener('change', function() {
         const options = document.getElementById('routineOptions');

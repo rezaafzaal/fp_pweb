@@ -1,12 +1,12 @@
-/* public/css/style.css */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap');
 
 :root {
-    --bg-warm: #FAF9F6;       /* Off-white kertas */
-    --primary-brown: #8D6E63; /* Warna Mocha/Kopi */
+    --bg-warm: #FAF9F6;       
+    --primary-brown: #8D6E63; 
     --secondary-beige: #D7CCC8;
-    --accent-sage: #AED581;   /* Hijau lembut */
-    --accent-clay: #E57373;   /* Merah lembut */
+    --accent-sage: #AED581;  
+    --accent-clay: #E57373;   
     --text-dark: #4E342E;
     --card-shadow: 0 4px 20px rgba(141, 110, 99, 0.1);
 }
@@ -23,7 +23,6 @@ h1, h2, h3, h4, h5, .brand-font {
     color: var(--text-dark);
 }
 
-/* Custom Card Studygram Style */
 .card-custom {
     background: #FFFFFF;
     border: none;
@@ -36,7 +35,6 @@ h1, h2, h3, h4, h5, .brand-font {
     transform: translateY(-3px);
 }
 
-/* Urgency Badges */
 .badge-urgency-high {
     background-color: #ffebee;
     color: #c62828;
@@ -53,7 +51,6 @@ h1, h2, h3, h4, h5, .brand-font {
     border: 1px solid #a5d6a7;
 }
 
-/* Form Inputs */
 .form-control {
     background-color: #fcfcfc;
     border: 2px solid #efebe9;
@@ -67,7 +64,6 @@ h1, h2, h3, h4, h5, .brand-font {
     box-shadow: 0 0 0 0.2rem rgba(141, 110, 99, 0.25);
 }
 
-/* Buttons */
 .btn-primary-custom {
     background-color: var(--primary-brown);
     border-color: var(--primary-brown);
@@ -90,8 +86,33 @@ h1, h2, h3, h4, h5, .brand-font {
     color: var(--primary-brown);
 }
 
-/* Checklist Animation */
 .task-done-text {
     text-decoration: line-through;
     color: #bdbdbd;
+}
+
+/* Footer Styles */
+.footer-custom {
+    background-color: #3E2723; 
+    color: #FAF9F6;
+}
+
+.footer-custom h5 {
+    color: #C5A065; 
+    font-weight: bold;
+    margin-bottom: 1.2rem;
+}
+
+.footer-custom a {
+    color: #FAF9F6; 
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-custom a:hover {
+    color: #C5A065; 
+}
+
+.footer-divider {
+    border-color: rgba(197, 160, 101, 0.3); 
 }
